@@ -11,7 +11,6 @@ void Handler(int signum)
     syslog(LOG_INFO, "Waking up daemon through SIGUSR1");
 }
 
-//TODO ERROR HANDLING <------ zrobione
 //Return value true means that modification time of file in path1 is after modification time of path2
 bool CheckIfChanged(char *path1, char *path2)
 {
@@ -32,7 +31,6 @@ bool CheckIfChanged(char *path1, char *path2)
     return true;
 }
 
-//TODO ERROR HANDLING <------ zrobione
 //path2 is updated to path1 state
 void UpdateFile(char *path1, char *path2)
 {
@@ -242,6 +240,7 @@ void SwapBig(char *path1, char *path2)
     syslog(LOG_INFO, "Copied file: %s (SwapBig)", path1);
 }
 
+//TODO FINISH ERROR HANDLING
 void Delete(char *path)
 {
     struct stat filestat;
