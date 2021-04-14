@@ -118,11 +118,8 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
                 if (file1->d_name == file2->d_name)
                 {
                     char *newdirpath = strncpy(entry_path2 + path_len2, file1->d_name, sizeof(entry_path2) - path_len2);
-                    if (CheckIfChanged(entry_path1, entry_path2))
-                    {
-                        mkdir(newdirpath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-                        Compare(entry_path1, newdirpath, recursion, filesize);
-                    }
+                    mkdir(newdirpath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+                    Compare(entry_path1, newdirpath, recursion, filesize);
                     same = true;
                     break;
                 }
