@@ -80,7 +80,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
         lstat(entry_path1, &st1);
         if (S_ISDIR(st1.st_mode))
         {
-            //jezeli folder
+            Delete(entry_path1);
         }
         else
         {
