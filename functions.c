@@ -81,17 +81,45 @@ void SwapBig(char *path1, char *path2)
     char* map1;
     char* map2;
 
-    stat(path1, &filestat);
+    if(stat(path1, &filestat) == -1)
+    {
+        syslog(LOG_ERR, "Error retriveing information about the file: %s (SwapBig)", path1);
+        exit(EXIT_FAILURE);
+    }
 
     __off64_t size = &filestat.st_size;
 
     int fd1 = open(path1, O_RDONLY);
+    if(fd1 == -1)
+    {
+        syslog(LOG_ERR, "Error opening file (SwapBig)");
+        exit(EXIT_FAILURE);
+    }
     int fd2 = open(path2, O_WRONLY);
+    if(fd2 == -1)
+    {
+        syslog(LOG_ERR, "Error opening file (SwapBig)");
+        exit(EXIT_FAILURE);
+    }
 
     map1 = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd1, 0);
+    if(map1 == MAP_FAILED)
+    {
+        syslog(LOG_ERR, "Error mapping file: %s (SwapBig)", path1);
+        exit(EXIT_FAILURE);
+    }
 
-    truncate(path2, size);
+    if(truncate(path2, size) == -1)
+    {
+        syslog(LOG_ERR, "Error truncating file: %s (SwapBig)", path2);
+        exit(EXIT_FAILURE);
+    }
     map2 = mmap(NULL, size, PROT_WRITE, MAP_SHARED, fd2, 0);
+    if(map1 == MAP_FAILED)
+    {
+        syslog(LOG_ERR, "Error mapping file: %s (SwapBig)", path2);
+        exit(EXIT_FAILURE);
+    }
 
     for(int i = 0; i < size; i++)
         map2[i]=map2[i];
@@ -101,4 +129,6 @@ void SwapBig(char *path1, char *path2)
     
     close(fd1);
     close(fd2);
+
+    syslog(LOG_INFO, "Copied file: %s (SwapBig)", path1);
 }
