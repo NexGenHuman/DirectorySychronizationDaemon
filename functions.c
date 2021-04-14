@@ -1,12 +1,12 @@
 #include "functions.h"
-#include "sys/stat.h"
-#include "time.h"
-#include "utime.h"
-#include "sys/mman.h"
-#include "fcntl.h"
+#include <sys/stat.h>
+#include <time.h>
+#include <utime.h>
+#include <sys/mman.h>
+#include <fcntl.h>
 #define SMALL_FILE 1024 * 1024 * 64
 
-void Handler(char *nazwa)
+void Handler(int signum)
 {
     syslog(LOG_INFO, "Waking up daemon through SIGUSR1");
 }
@@ -162,7 +162,7 @@ void SwapBig(char *path1, char *path2)
         exit(EXIT_FAILURE);
     }
 
-    __off64_t size = &filestat.st_size;
+    __off64_t size = (__off64_t )&filestat.st_size;
 
     int fd1 = open(path1, O_RDONLY);
     if (fd1 == -1)
@@ -199,8 +199,8 @@ void SwapBig(char *path1, char *path2)
     for (int i = 0; i < size; i++)
         map2[i] = map2[i];
 
-    munmap(fd1, size);
-    munmap(fd2, size);
+    munmap(map1, size);
+    munmap(map2, size);
 
     close(fd1);
     close(fd2);
@@ -221,22 +221,22 @@ void Delete(char *path)
             syslog(LOG_ERR, "Error deleting file: %s (Delete)", path);
             exit(EXIT_FAILURE);
         }
-     }
-     else
-     {
-        // Handle directories
-        DIR *d;
-        struct dirent *dir;
-        d = opendir(path);
-        while ((dir = readdir(d)) != NULL) 
-        {
-            char* extendedPath = (char *) malloc(1 + strlen(path)+ strlen(dir->d_name));
-            strcpy(extendedPath, path);
-            strcat(extendedPath, dir->d_name);
-            Delete(extendedPath);
-        }
-        closedir(d);
+    }
+    else
+    {
+       // Handle directories
+       DIR *d;
+       struct dirent *dir;
+       d = opendir(path);
+       while ((dir = readdir(d)) != NULL) 
+       {
+           char* extendedPath = (char *) malloc(1 + strlen(path)+ strlen(dir->d_name));
+           strcpy(extendedPath, path);
+           strcat(extendedPath, dir->d_name);
+           Delete(extendedPath);
+       }
+       closedir(d);
 
-        rmdir(path);
-     }
+       rmdir(path);
+    }
 }
