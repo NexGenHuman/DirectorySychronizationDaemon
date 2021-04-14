@@ -16,7 +16,7 @@ void Handler(char *nazwa)
 bool CheckIfChanged(char *path1, char *path2)
 {
     struct stat filestat1, filestat2;
-
+    syslog(LOG_INFO, "CIC");
     if (stat(path1, &filestat1) == -1)
     {
         syslog(LOG_ERR, "Error retriveing information about the file: %s (CheckIfChanged)", path1);
