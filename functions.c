@@ -138,3 +138,21 @@ void SwapBig(char *path1, char *path2)
 
     syslog(LOG_INFO, "Copied file: %s (SwapBig)", path1);
 }
+
+//Looks trough path2 directory and deletes files not found in path1
+void ExtraFilesDelete(char *path1, char *path2)
+{
+
+}
+
+//Looks trough path2 directory and uploades missing files from path1
+void NewFilesUpload(char *path1, char *path2)
+{
+
+}
+
+//Looks trough path2 directory and calls UpdateFile for files with identical names
+void FileUpdater(char *path1, char *path2)
+{
+
+}
