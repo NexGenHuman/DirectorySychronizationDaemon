@@ -110,9 +110,28 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
         strncpy(entry_path1 + path_len1, file1->d_name, sizeof(entry_path1) - path_len1);
         struct stat st1;
         lstat(entry_path1, &st1);
-        if (S_ISDIR(st1.st_mode))
+        if (S_ISDIR(st1.st_mode) && !strcmp(file1->d_name, ".") && !strcmp(file1->d_name, "..") && recursion)
         {
-            //jezeli folder
+            while ((file2 = readdir(dir2)) != NULL)
+            {
+                strncpy(entry_path2 + path_len2, file2->d_name, sizeof(entry_path2) - path_len2);
+                if (file1->d_name == file2->d_name)
+                {
+                    char *newdirpath = strncpy(entry_path2 + path_len2, file1->d_name, sizeof(entry_path2) - path_len2);
+                    if (CheckIfChanged(entry_path1, entry_path2))
+                    {
+                        mkdir(newdirpath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+                        Compare(entry_path1, newdirpath, recursion, filesize);
+                    }
+                    same = true;
+                    break;
+                }
+            }
+            if (same == false)
+            {
+                UpdateFile(entry_path1, strncpy(entry_path2 + path_len2, file1->d_name, sizeof(entry_path2) - path_len2));
+            }
+            closedir(dir2);
         }
         else
         {
