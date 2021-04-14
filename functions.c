@@ -19,7 +19,7 @@ bool CheckIfChanged(char *path1, char *path2)
     stat(path2, &filestat2);
     
     //Negative difftime means that time1 is before time2
-    if(difftime(ctime(&filestat1.st_mtime), ctime(&filestat2.st_mtime)) < 0)
+    if(difftime((time_t)&filestat1.st_mtime, (time_t)&filestat2.st_mtime) < 0)
         return false;
     return true;
 }
@@ -31,7 +31,7 @@ void UpdateFile(char *path1, char *path2)
     struct stat filestat;
 
     stat(path1, &filestat);
-    if(&filestat.st_size <= SMALL_FILE)
+    if((off_t)&filestat.st_size <= SMALL_FILE)
         SwapSmall(path1, path2);
     SwapBig(path1, path2);
 }
