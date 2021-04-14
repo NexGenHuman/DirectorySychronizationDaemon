@@ -47,6 +47,37 @@ void UpdateFile(char *path1, char *path2)
     SwapBig(path1, path2);
 }
 
+void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje foldery i wywoluje usuwanie/kopiowanie
+{
+    char entry_path1[PATH_MAX + 1], entry_path2[PATH_MAX + 1];
+    size_t path_len1, path_len2;
+    DIR *dir1, *dir2;
+    struct dirent *file;
+    strncpy(entry_path1, path1, sizeof (entry_path1));
+    path_len1 = strlen(path1);
+    strncpy(entry_path2, path2, sizeof (entry_path2));
+    path_len2 = strlen(path2);
+    if(entry_path1[path_len1 - 1] != '/')
+    {
+        entry_path1[path_len1] = '/';
+        entry_path1[path_len1 + 1] = '\0';
+        ++path_len1;
+    }
+    if(entry_path2[path_len2 - 1] != '/')
+    {
+        entry_path2[path_len2] = '/';
+        entry_path2[path_len2 + 1] = '\0';
+        ++path_len2;
+    }
+    dir1 = opendir(path1);
+    dir2 = opendir(path2);
+    while ((file = readdir(dir1)) != NULL)
+    {
+        strncpy(entry_path1 + path_len1, file->d_name, sizeof(entry_path1) - path_len1);
+        syslog(LOG_INFO, "%s", entry_path1);
+    }
+}
+
 void SwapSmall(char *path1, char *path2)
 {
     char buf[64];
@@ -77,12 +108,10 @@ void SwapSmall(char *path1, char *path2)
 
 void SwapBig(char *path1, char *path2)
 {
-    //Variables declaration
     struct stat filestat;
     char* map1;
     char* map2;
 
-    //Retrieving path1 file info
     if(stat(path1, &filestat) == -1)
     {
         syslog(LOG_ERR, "Error retriveing information about the file: %s (SwapBig)", path1);
@@ -90,8 +119,7 @@ void SwapBig(char *path1, char *path2)
     }
 
     __off64_t size = &filestat.st_size;
-    
-    //Opening file descriptors
+
     int fd1 = open(path1, O_RDONLY);
     if(fd1 == -1)
     {
@@ -105,7 +133,6 @@ void SwapBig(char *path1, char *path2)
         exit(EXIT_FAILURE);
     }
 
-    //File mapping
     map1 = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd1, 0);
     if(map1 == MAP_FAILED)
     {
@@ -125,11 +152,9 @@ void SwapBig(char *path1, char *path2)
         exit(EXIT_FAILURE);
     }
 
-    //Content copying
     for(int i = 0; i < size; i++)
         map2[i]=map2[i];
 
-    //Cleanup
     munmap(fd1, size);
     munmap(fd2, size);
     
