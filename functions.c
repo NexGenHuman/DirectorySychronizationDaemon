@@ -9,29 +9,38 @@ void Handler(char *nazwa)
     syslog(LOG_INFO, "Waking up daemon through SIGUSR1");
 }
 
-//TODO ERROR HANDLING
+//TODO ERROR HANDLING <------ zrobione
 //Return value true means that modification time of file in path1 is after modification time of path2
 bool CheckIfChanged(char *path1, char *path2)
 {
     struct stat filestat1, filestat2;
 
-    stat(path1, &filestat1);
-    stat(path2, &filestat2);
+    if(stat(path1, &filestat1) == -1)
+    {
+        syslog(LOG_ERR, "Error retriveing information about the file: %s (CheckIfChanged)", path1);
+    }
+    if(stat(path2, &filestat2) == -1)
+    {
+        syslog(LOG_ERR, "Error retriveing information about the file: %s (CheckIfChanged)", path2);
+    }
     
     //Negative difftime means that time1 is before time2
-    if(difftime((time_t)&filestat1.st_mtime, (time_t)&filestat2.st_mtime) < 0)
+    if(difftime((time_t)&filestat1.st_mtime, (time_t)&filestat2.st_mtime) < 0) //nie jestem pewien czy (time_t) dziala
         return false;
     return true;
 }
 
-//TODO ERROR HANDLING
+//TODO ERROR HANDLING <------ zrobione
 //path2 is updated to path1 state
 void UpdateFile(char *path1, char *path2)
 {
     struct stat filestat;
 
-    stat(path1, &filestat);
-    if((off_t)&filestat.st_size <= SMALL_FILE)
+    if(stat(path1, &filestat) == -1)
+    {
+        syslog(LOG_ERR, "Error retriveing information about the file: %s (UpdateFile)", path1);
+    }
+    if((off_t)&filestat.st_size <= SMALL_FILE) //to tez nwm czy dziala
         SwapSmall(path1, path2);
     SwapBig(path1, path2);
 }
