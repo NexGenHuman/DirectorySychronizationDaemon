@@ -207,7 +207,6 @@ void SwapBig(char *path1, char *path2)
 
     syslog(LOG_INFO, "Copied file: %s (SwapBig)", path1);
 }
-<<<<<<< HEAD
 
 void Delete(char *path)
 {
@@ -241,5 +240,3 @@ void Delete(char *path)
         rmdir(path);
      }
 }
-=======
->>>>>>> 40b0119563046ff0cb62a89f9e1dd8392019a8be
