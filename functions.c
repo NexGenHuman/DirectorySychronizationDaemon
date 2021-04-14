@@ -2,15 +2,14 @@
 #include "sys/stat.h"
 #include "time.h"
 #include "utime.h"
-#define SMALL_FILE 1024*1024*4
+#define SMALL_FILE 1024*1024*64
 
 void Handler(char *nazwa)
 {
     syslog(LOG_INFO, "Waking up daemon through SIGUSR1");
 }
 
-//REMEMBER! użyłem struct stat który jest tylko na Linux.
-
+//TODO ERROR HANDLING
 //Return value true means that modification time of file in path1 is after modification time of path2
 bool CheckIfChanged(char *path1, char *path2)
 {
@@ -25,6 +24,7 @@ bool CheckIfChanged(char *path1, char *path2)
     return true;
 }
 
+//TODO ERROR HANDLING
 //path2 is updated to path1 state
 void UpdateFile(char *path1, char *path2)
 {
@@ -43,5 +43,5 @@ void SwapSmall(char *path1, char *path2)
 
 void SwapBig(char *path1, char *path2)
 {
-    
+    //Trochę już o mmap poczytałem i postaram się ja tą funkcję zrobić
 }
