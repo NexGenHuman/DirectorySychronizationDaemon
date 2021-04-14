@@ -77,10 +77,12 @@ void SwapSmall(char *path1, char *path2)
 
 void SwapBig(char *path1, char *path2)
 {
+    //Variables declaration
     struct stat filestat;
     char* map1;
     char* map2;
 
+    //Retrieving path1 file info
     if(stat(path1, &filestat) == -1)
     {
         syslog(LOG_ERR, "Error retriveing information about the file: %s (SwapBig)", path1);
@@ -88,7 +90,8 @@ void SwapBig(char *path1, char *path2)
     }
 
     __off64_t size = &filestat.st_size;
-
+    
+    //Opening file descriptors
     int fd1 = open(path1, O_RDONLY);
     if(fd1 == -1)
     {
@@ -102,6 +105,7 @@ void SwapBig(char *path1, char *path2)
         exit(EXIT_FAILURE);
     }
 
+    //File mapping
     map1 = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd1, 0);
     if(map1 == MAP_FAILED)
     {
@@ -121,9 +125,11 @@ void SwapBig(char *path1, char *path2)
         exit(EXIT_FAILURE);
     }
 
+    //Content copying
     for(int i = 0; i < size; i++)
         map2[i]=map2[i];
 
+    //Cleanup
     munmap(fd1, size);
     munmap(fd2, size);
     
