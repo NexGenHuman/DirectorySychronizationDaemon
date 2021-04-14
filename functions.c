@@ -119,7 +119,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
         }
         closedir(dir2);
     }
-    Closedir(dir1);
+    closedir(dir1);
 }
 
 void SwapSmall(char *path1, char *path2)
