@@ -38,7 +38,30 @@ void UpdateFile(char *path1, char *path2)
 
 void SwapSmall(char *path1, char *path2)
 {
-
+    char buf[64];
+    int file1, file2;
+    int bufsize1, bufsize2;
+    file1 = open(path1, O_RDONLY, 0644);
+    file2 = open(path2, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    if(file1 == -1 || file2 == -1)
+    {
+        syslog(LOG_ERR, "Error opening file (SwapSmall)");
+        exit(EXIT_FAILURE);
+    }
+    while(bufsize1 = read(file1, buf, sizeof(buf)) > 0)
+    {
+        bufsize2 = write(file2, buf, bufsize1);
+        if(bufsize1 != bufsize2)
+        {
+            syslog(LOG_ERR, "Error copying file (SwapSmall)");
+            exit(EXIT_FAILURE);
+        }
+        bzero(buf, sizeof(buf));
+    }
+    close(file1);
+    close(file2);
+    //mozliwe ze trzeba jeszcze czas zamienic
+    syslog(LOG_INFO, "Copied file: %s (SwapSmall)", path1);
 }
 
 void SwapBig(char *path1, char *path2)

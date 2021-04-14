@@ -77,7 +77,7 @@ int main(int argc, char **argv)
     syslog(LOG_INFO, "Daemon starting");
     if(signal(SIGUSR1, Handler) == SIG_ERR)
     {
-        syslog(LOG_ERR, "Siganl error");
+        syslog(LOG_ERR, "Signal error");
         exit(EXIT_FAILURE);
     }
 
