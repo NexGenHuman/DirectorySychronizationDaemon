@@ -22,5 +22,5 @@ void SwapSmall(char *path1, char *path2);
 void SwapBig(char *path1, char *path2);
 void Handler();
 void Compare(char *path1, char *path2, bool recursion, int filesize);
-
+void Delete(char *path);
 #endif
