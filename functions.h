@@ -23,5 +23,4 @@ void SwapBig(char *path1, char *path2);
 void Handler(int signum);
 void Compare(char *path1, char *path2, bool recursion, int filesize);
 void Delete(char *path);
-
 #endif
