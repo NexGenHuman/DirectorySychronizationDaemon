@@ -163,3 +163,36 @@ void SwapBig(char *path1, char *path2)
 
     syslog(LOG_INFO, "Copied file: %s (SwapBig)", path1);
 }
+
+void Delete(char *path)
+{
+    struct stat filestat;
+
+    stat(path, &filestat);
+    if (S_ISREG(filestat.st_mode))
+    {
+        // Handle regular file
+        if(unlink(path) == -1)
+        {
+            syslog(LOG_ERR, "Error deleting file: %s (Delete)", path);
+            exit(EXIT_FAILURE);
+        }
+     }
+     else
+     {
+        // Handle directories
+        DIR *d;
+        struct dirent *dir;
+        d = opendir(path);
+        while ((dir = readdir(d)) != NULL) 
+        {
+            char* extendedPath = (char *) malloc(1 + strlen(path)+ strlen(dir->d_name));
+            strcpy(extendedPath, path);
+            strcat(extendedPath, dir->d_name);
+            Delete(extendedPath);
+        }
+        closedir(d);
+
+        rmdir(path);
+     }
+}
