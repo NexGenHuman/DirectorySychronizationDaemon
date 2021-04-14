@@ -43,6 +43,7 @@ int main(int argc, char **argv)
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
 
+    int fsize;
     int s;
     int sleeptime = 300;
     bool recursion = false;
@@ -60,12 +61,14 @@ int main(int argc, char **argv)
             break;
 
         case 'm':
-            //miejsce na 2 kropke
+            fsize = atoi(optarg);
         break;
 
         case '?':
             if (optopt == 's')
                 syslog(LOG_ERR, "Option -s requires argument");
+            else if (optopt == 'm')
+                syslog(LOG_ERR, "Option -m requires argument");
             else
                 syslog(LOG_ERR, "Unknown option character");
             exit(EXIT_FAILURE);
@@ -83,6 +86,7 @@ int main(int argc, char **argv)
 
     while(1)
     {
+        Compare(argv[1], argv[2], recursion, fsize);
         //tutaj bedzie porownywac fordery itd
         if(sleep(sleeptime) == 0)
         {

@@ -13,10 +13,14 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <strings.h>
+#include <string.h>
+#include <assert.h>
 
 void UpdateFile(char *path1, char *path2);
 bool CheckIfChanged(char *path1, char *path2);
 void SwapSmall(char *path1, char *path2);
 void SwapBig(char *path1, char *path2);
 void Handler();
+void Compare(char *path1, char *path2, bool recursion, int filesize);
+
 #endif
