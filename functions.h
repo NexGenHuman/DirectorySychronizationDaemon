@@ -11,8 +11,12 @@
 #include <stdbool.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-//#include <fcntl.h>
+#include <fcntl.h>
+#include <strings.h>
 
-
+void UpdateFile(char *path1, char *path2);
+bool CheckIfChanged(char *path1, char *path2);
+void SwapSmall(char *path1, char *path2);
+void SwapBig(char *path1, char *path2);
 void Handler();
 #endif
