@@ -26,9 +26,10 @@ bool CheckIfChanged(char *path1, char *path2)
     }
 
     //Negative difftime means that time1 is before time2
-    if (difftime((time_t)&filestat1.st_mtime, (time_t)&filestat2.st_mtime) < 0) //nie jestem pewien czy (time_t) dziala
+    if (difftime((time_t)filestat1.st_mtime, (time_t)filestat2.st_mtime) < 0) //nie jestem pewien czy (time_t) dziala
         return false;
-    return true;
+    else
+        return true;
 }
 
 //path2 is updated to path1 state
