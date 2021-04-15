@@ -35,7 +35,7 @@ int main(int argc, char **argv)
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
 
-    int fsize;
+    int fsize = 1024 * 1024 * 64;
     int s;
     int sleeptime = 300;
     bool recursion = false;
@@ -60,11 +60,9 @@ int main(int argc, char **argv)
             sleeptime = atoi(optarg);
             //syslog(LOG_INFO, "Option -s");
             break;
-
         case 'm':
             fsize = atoi(optarg);
             break;
-
         case '?':
             if (optopt == 's')
                 syslog(LOG_ERR, "Option -s requires argument");
@@ -95,7 +93,7 @@ int main(int argc, char **argv)
     while (1)
     {
         Compare(in, out, recursion, fsize);
-        //tutaj bedzie porownywac fordery itd
+        syslog(LOG_INFO, "Daemon going to sleep");
         if (sleep(sleeptime) == 0)
         {
             syslog(LOG_INFO, "Daemon waking up");

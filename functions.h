@@ -16,7 +16,7 @@
 #include <string.h>
 #include <assert.h>
 
-void UpdateFile(char *path1, char *path2);
+void UpdateFile(char *path1, char *path2, int filesize);
 bool CheckIfChanged(char *path1, char *path2);
 void SwapSmall(char *path1, char *path2);
 void SwapBig(char *path1, char *path2);

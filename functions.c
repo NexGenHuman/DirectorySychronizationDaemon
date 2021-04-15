@@ -4,7 +4,7 @@
 #include <utime.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-#define SMALL_FILE 1024 * 1024 * 64
+//#define SMALL_FILE 1024 * 1024 * 64
 
 void Handler(int signum)
 {
@@ -15,14 +15,16 @@ void Handler(int signum)
 bool CheckIfChanged(char *path1, char *path2)
 {
     struct stat filestat1, filestat2;
-    syslog(LOG_INFO, "CIC");
+    //syslog(LOG_INFO, "CIC");
     if (stat(path1, &filestat1) == -1)
     {
         syslog(LOG_ERR, "Error retriveing information about the file: %s (CheckIfChanged)", path1);
+        exit(EXIT_FAILURE);
     }
     if (stat(path2, &filestat2) == -1)
     {
         syslog(LOG_ERR, "Error retriveing information about the file: %s (CheckIfChanged)", path2);
+        exit(EXIT_FAILURE);
     }
 
     //Negative difftime means that time1 is before time2
@@ -33,15 +35,16 @@ bool CheckIfChanged(char *path1, char *path2)
 }
 
 //path2 is updated to path1 state
-void UpdateFile(char *path1, char *path2)
+void UpdateFile(char *path1, char *path2, int filesize)
 {
     struct stat filestat;
 
     if (stat(path1, &filestat) == -1)
     {
         syslog(LOG_ERR, "Error retriveing information about the file: %s (UpdateFile)", path1);
+        exit(EXIT_FAILURE);
     }
-    if ((off_t)filestat.st_size <= SMALL_FILE) //to tez nwm czy dziala
+    if ((off_t)filestat.st_size <= filesize) //to tez nwm czy dziala
         SwapSmall(path1, path2);
     else
     {
@@ -83,7 +86,11 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
         {
             //syslog(LOG_INFO, "Compare (del2) - reading file: %s", entry_path2);
             struct stat st1;
-            lstat(entry_path2, &st1);
+            if (lstat(entry_path2, &st1) == -1)
+            {
+                syslog(LOG_ERR, "Error retriveing information about the file: %s (Compare)", entry_path2);
+                exit(EXIT_FAILURE);
+            }
             if (S_ISDIR(st1.st_mode) && recursion)
             {
                 dir1 = opendir(path1);
@@ -116,7 +123,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
                 {
                     strncpy(entry_path1 + path_len1, file1->d_name, sizeof(entry_path1) - path_len1);
                     //syslog(LOG_INFO, "Compare (delfile) - reading file2: %s", entry_path1);
-                    if (file1->d_name == file2->d_name)
+                    if (strcmp(file1->d_name, file2->d_name) == 0)
                     {
                         same = true;
                         break;
@@ -140,7 +147,11 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
         dir2 = opendir(path2);
         strncpy(entry_path1 + path_len1, file1->d_name, sizeof(entry_path1) - path_len1);
         struct stat st1;
-        lstat(entry_path1, &st1);
+        if (lstat(entry_path1, &st1) == -1)
+        {
+            syslog(LOG_ERR, "Error retriveing information about the file: %s (Compare)", entry_path1);
+            exit(EXIT_FAILURE);
+        }
         //syslog(LOG_INFO, "Compare (cp1) - reading file: %s", file1->d_name);
         if (!((strcmp(file1->d_name, ".") == 0 || strcmp(file1->d_name, "..") == 0)))
         {
@@ -150,7 +161,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
                 while ((file2 = readdir(dir2)) != NULL)
                 {
                     strncpy(entry_path2 + path_len2, file2->d_name, sizeof(entry_path2) - path_len2);
-                    if (file1->d_name == file2->d_name)
+                    if (strcmp(file1->d_name, file2->d_name) == 0)
                     {
                         //char *newdirpath = strncpy(entry_path2 + path_len2, "/", sizeof(entry_path2) - path_len2);
                         //mkdir(path2, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -162,7 +173,11 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
                 if (same == false)
                 {
                     strncpy(entry_path2 + path_len2, file1->d_name, sizeof(entry_path2) - path_len2);
-                    mkdir(entry_path2, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+                    if(mkdir(entry_path2, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1)
+                    {
+                        syslog(LOG_ERR, "Error creating directory: %s (Compare)", entry_path2);
+                        exit(EXIT_FAILURE);
+                    }
                     Compare(entry_path1, entry_path2, recursion, filesize);
                     //UpdateFile(entry_path1, strncpy(entry_path2 + path_len2, file1->d_name, sizeof(entry_path2) - path_len2));
                 }
@@ -174,11 +189,11 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
                 while ((file2 = readdir(dir2)) != NULL)
                 {
                     strncpy(entry_path2 + path_len2, file2->d_name, sizeof(entry_path2) - path_len2);
-                    if (file1->d_name == file2->d_name)
+                    if (strcmp(file1->d_name, file2->d_name) == 0)
                     {
                         if (CheckIfChanged(entry_path1, entry_path2))
                         {
-                            UpdateFile(entry_path1, entry_path2);
+                            UpdateFile(entry_path1, entry_path2, filesize);
                         }
                         same = true;
                         break;
@@ -187,7 +202,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
                 if (same == false)
                 {
                     strncpy(entry_path2 + path_len2, file1->d_name, sizeof(entry_path2) - path_len2);
-                    UpdateFile(entry_path1, entry_path2);
+                    UpdateFile(entry_path1, entry_path2, filesize);
                 }
                 closedir(dir2);
             }
@@ -218,7 +233,7 @@ void SwapSmall(char *path1, char *path2)
         bufsize2 = write(file2, buf, (ssize_t)bufsize1);
         if (bufsize1 != bufsize2)
         {
-            syslog(LOG_ERR, "Error copying file (SwapSmall)");
+            syslog(LOG_ERR, "Error copying file: %s (SwapSmall)", path1);
             exit(EXIT_FAILURE);
         }
         bzero(buf, sizeof(buf));
@@ -226,7 +241,7 @@ void SwapSmall(char *path1, char *path2)
     close(file1);
     close(file2);
     //mozliwe ze trzeba jeszcze czas zamienic
-    syslog(LOG_INFO, "Copied file: %s (SwapSmall)", path1);
+    syslog(LOG_INFO, "Copied file: %s to: %s (SwapSmall)", path1, path2);
 }
 
 void SwapBig(char *path1, char *path2)
@@ -241,20 +256,21 @@ void SwapBig(char *path1, char *path2)
         exit(EXIT_FAILURE);
     }
 
-    int fd1 = open(path1, O_RDONLY);
+    int fd1 = open(path1, O_RDONLY, 0644);
     if (fd1 == -1)
     {
-        syslog(LOG_ERR, "Error opening file (SwapBig)");
-        exit(EXIT_FAILURE);
-    }
-    int fd2 = open(path2, O_RDWR);
-    if (fd2 == -1)
-    {
-        syslog(LOG_ERR, "Error opening file (SwapBig)");
+        syslog(LOG_ERR, "Error opening p1 file: %s (SwapBig)", path1);
         exit(EXIT_FAILURE);
     }
 
-    map1 = (char*)mmap(NULL, filestat.st_size, PROT_READ, MAP_PRIVATE, fd1, 0);
+    int fd2 = open(path2, O_CREAT | O_RDWR | O_TRUNC, 0644);
+    if (fd2 == -1)
+    {
+        syslog(LOG_ERR, "Error opening p2 file: %s (SwapBig)", path2);
+        exit(EXIT_FAILURE);
+    }
+
+    map1 = (char *)mmap(NULL, filestat.st_size, PROT_READ, MAP_PRIVATE, fd1, 0);
     if (map1 == MAP_FAILED)
     {
         syslog(LOG_ERR, "Error mapping file: %s (SwapBig)", path1);
@@ -266,7 +282,7 @@ void SwapBig(char *path1, char *path2)
         syslog(LOG_ERR, "Error truncating file: %s (SwapBig)", path2);
         exit(EXIT_FAILURE);
     }
-    map2 = (char*)mmap(NULL, filestat.st_size, PROT_WRITE, MAP_SHARED, fd2, 0);
+    map2 = (char *)mmap(NULL, filestat.st_size, PROT_WRITE, MAP_SHARED, fd2, 0);
     if (map2 == MAP_FAILED)
     {
         syslog(LOG_ERR, "Error mapping file: %s (SwapBig)", path2);
@@ -283,7 +299,7 @@ void SwapBig(char *path1, char *path2)
     close(fd1);
     close(fd2);
 
-    syslog(LOG_INFO, "Copied file: %s (SwapBig)", path1);
+    syslog(LOG_INFO, "Copied file: %s to: %s (SwapBig)", path1, path2);
 }
 
 //TODO FINISH ERROR HANDLING
@@ -332,7 +348,7 @@ void Delete(char *path)
                     ++path_len;
                 }
                 //syslog(LOG_INFO, "Deleteing fileccc: %s", path_cp);
-                strncpy(path_cp + path_len, dir->d_name, sizeof(path_cp) - path_len); 
+                strncpy(path_cp + path_len, dir->d_name, sizeof(path_cp) - path_len);
                 //syslog(LOG_INFO, "Deleteing filebbsbddd: %s", dir->d_name);
                 Delete(path_cp);
             }
