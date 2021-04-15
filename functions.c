@@ -227,7 +227,7 @@ void SwapSmall(char *path1, char *path2)
         bufsize2 = write(file2, buf, (ssize_t)bufsize1);
         if (bufsize1 != bufsize2)
         {
-            syslog(LOG_ERR, "Error copying file (SwapSmall)");
+            syslog(LOG_ERR, "Error copying file: %s (SwapSmall)", path1);
             exit(EXIT_FAILURE);
         }
         bzero(buf, sizeof(buf));
@@ -235,7 +235,7 @@ void SwapSmall(char *path1, char *path2)
     close(file1);
     close(file2);
     //mozliwe ze trzeba jeszcze czas zamienic
-    syslog(LOG_INFO, "Copied file: %s (SwapSmall)", path1);
+    syslog(LOG_INFO, "Copied file: %s to: %s (SwapSmall)", path1, path2);
 }
 
 void SwapBig(char *path1, char *path2)
@@ -292,7 +292,7 @@ void SwapBig(char *path1, char *path2)
     close(fd1);
     close(fd2);
 
-    syslog(LOG_INFO, "Copied file: %s (SwapBig)", path1);
+    syslog(LOG_INFO, "Copied file: %s to: %s (SwapBig)", path1, path2);
 }
 
 //TODO FINISH ERROR HANDLING
