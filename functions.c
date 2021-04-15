@@ -275,7 +275,7 @@ void SwapBig(char *path1, char *path2)
 
     //Core dump here
     for (int i = 0; i < filestat.st_size; i++)
-        map2[i] = map2[i];
+        map2[i] = map1[i];
 
     munmap(map1, filestat.st_size);
     munmap(map2, filestat.st_size);
