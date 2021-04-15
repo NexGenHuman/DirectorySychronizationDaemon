@@ -95,7 +95,7 @@ int main(int argc, char **argv)
     while (1)
     {
         Compare(in, out, recursion, fsize);
-        //tutaj bedzie porownywac fordery itd
+        syslog(LOG_INFO, "Daemon going to sleep");
         if (sleep(sleeptime) == 0)
         {
             syslog(LOG_INFO, "Daemon waking up");
