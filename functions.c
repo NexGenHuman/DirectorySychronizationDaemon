@@ -354,6 +354,7 @@ void Delete(char *path)
             }
         }
         closedir(d);
+        syslog(LOG_INFO, "Deleted directory: %s", path);
         rmdir(path);
     }
 }
