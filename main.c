@@ -4,14 +4,6 @@ int main(int argc, char **argv)
 {
     openlog("Copying_daemon", LOG_CONS, LOG_USER);
 
-    DIR *dir_ptr;
-    if ((dir_ptr = opendir(argv[1])) == NULL || (dir_ptr = opendir(argv[2])) == NULL)
-    {
-        syslog(LOG_ERR, "Wrong directory");
-        write(1, "Wrong directory\n", 16);
-        exit(EXIT_FAILURE);
-    }
-
     pid_t pid, sid;
 
     pid = fork();
@@ -47,22 +39,31 @@ int main(int argc, char **argv)
     int s;
     int sleeptime = 300;
     bool recursion = false;
-    while ((s = getopt(argc, argv, "Rms:")) != -1)
+    char *in, *out;
+    while ((s = getopt(argc, argv, "i:o:Rm:s:")) != -1)
         switch (s)
         {
-        case 'R':   //opcja "-R"
+        case 'i': //1 folder
+            in = optarg;
+            //syslog(LOG_INFO, "Option -R");
+            break;
+        case 'o': //2 folder
+            out = optarg;
+            //syslog(LOG_INFO, "Option -R");
+            break;
+        case 'R': //opcja "-R"
             recursion = true;
             //syslog(LOG_INFO, "Option -R");
-        break;
+            break;
 
-        case 's':   //opcja "-s sleeptime" - zmienia czas spania
+        case 's': //opcja "-s sleeptime" - zmienia czas spania
             sleeptime = atoi(optarg);
             //syslog(LOG_INFO, "Option -s");
             break;
 
         case 'm':
             fsize = atoi(optarg);
-        break;
+            break;
 
         case '?':
             if (optopt == 's')
@@ -72,23 +73,30 @@ int main(int argc, char **argv)
             else
                 syslog(LOG_ERR, "Unknown option character");
             exit(EXIT_FAILURE);
-        break;
+            break;
 
         default:
             abort();
         }
+    DIR *dir_ptr;
+    if ((dir_ptr = opendir(in)) == NULL || (dir_ptr = opendir(out)) == NULL)
+    {
+        syslog(LOG_ERR, "Wrong directory");
+        write(1, "Wrong directory\n", 16);
+        exit(EXIT_FAILURE);
+    }
     syslog(LOG_INFO, "Daemon starting");
-    if(signal(SIGUSR1, Handler) == SIG_ERR)
+    if (signal(SIGUSR1, Handler) == SIG_ERR)
     {
         syslog(LOG_ERR, "Signal error");
         exit(EXIT_FAILURE);
     }
 
-    while(1)
+    while (1)
     {
-        Compare(argv[1], argv[2], recursion, fsize);
+        Compare(in, out, recursion, fsize);
         //tutaj bedzie porownywac fordery itd
-        if(sleep(sleeptime) == 0)
+        if (sleep(sleeptime) == 0)
         {
             syslog(LOG_INFO, "Daemon waking up");
         }
