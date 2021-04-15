@@ -256,14 +256,14 @@ void SwapBig(char *path1, char *path2)
         exit(EXIT_FAILURE);
     }
 
-    int fd1 = open(path1, O_RDONLY);
+    int fd1 = open(path1, O_RDONLY, 0644);
     if (fd1 == -1)
     {
         syslog(LOG_ERR, "Error opening p1 file: %s (SwapBig)", path1);
         exit(EXIT_FAILURE);
     }
 
-    int fd2 = open(path2, O_RDWR);
+    int fd2 = open(path2, O_CREAT | O_RDWR | O_TRUNC, 0644);
     if (fd2 == -1)
     {
         syslog(LOG_ERR, "Error opening p2 file: %s (SwapBig)", path2);
