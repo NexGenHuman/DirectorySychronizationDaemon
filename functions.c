@@ -41,12 +41,11 @@ void UpdateFile(char *path1, char *path2)
     {
         syslog(LOG_ERR, "Error retriveing information about the file: %s (UpdateFile)", path1);
     }
-    if ((off_t)&filestat.st_size <= SMALL_FILE) //to tez nwm czy dziala
+    if ((off_t)filestat.st_size <= SMALL_FILE) //to tez nwm czy dziala
         SwapSmall(path1, path2);
     else
     {
-        SwapSmall(path1, path2);
-        //SwapBig(path1, path2);
+        SwapBig(path1, path2);
     }
 }
 
