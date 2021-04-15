@@ -1,0 +1,27 @@
+Temat 1. Demon synchronizujący dwa podkatalogi
+Piotr Go, Konrad Józef Wasilewski
+
+Zaimplementowane funkcje:
+- synchronizacja dwóch podanych podkatalogów
+- ustawienie czasu uśpienia demona
+- ustalenie czy demon ma ignorowac katalogi
+- kopiowanie plików (opcjonalnie także katalogów) kiedy demon napotka na nowy plik/katalog w katalogu źródłowym lub w katalogu docelowym plik ma późniejszą datę ostatniej modyfikacji niż w katalogu źródłowym, ustawia przy tym aktualną datę jako datę modyfikacji  
+- usuwanie plików (opcjonalnie także katalogów) kiedy demon napotka na plik/katalog w katalogu docelowym, którego nie ma w katalogu źródłowym
+- istnieje możliwość natychmiastowego wybudzenia demona poprzez wysłanie mu sygnału SIGUSR1
+- wyczerpująca informacja dotycząca uśpienia/obudzenia demona, a także kopii i usuniecia pliku/katalogu jest przesyłana do logu systemowego
+- rekurencyjna synchronizacja katalogów
+- ustawienie minimalnego rozmiaru pliku dla którego plik bedzie kopiowany przy użyciu mapowania pamięci a nie przy użyciu read/write
+
+Instrukcja uruchomienia demona:
+./cp_daemon -i ścieżka_do_katlogu_źródłowego -o ścieżka_do_katalogu_docelowego [-R] [-s czas] [-m rozmiar_pliku]
+
+-i ścieżka_do_katalogu_źródłowego - ścieżka do katalogu, skąd bedzie następować synchronizacja
+-o ścieżka_do_katalogu_docelowego - ścieżka do katalogu, na którym bedzie następować synchronizacja
+-s czas - (opcjonalnie) ustawienie czasu w sekundach, co który bedzie się wybudzać demon
+-R - (opcjonalnie) pozwala na rekurencyjną synchronizacje katalogów
+-m rozmiar_pliku - (opcjonalnie) ustawienie progu na którym demona bedzie zmieniał sposób kopiowania z read/write na mmap
+
+Przykład:
+./cp_daemon -i ~/projektdemon/kat1 -o ~/projektdemon/kat2 -R
+
+Poza tym dołączony jest także skrypt tworzący strukturę katalogów wraz z kilkoma plikami tekstowymi (uruchamiany poleceniem "bash skrypt.sh")
