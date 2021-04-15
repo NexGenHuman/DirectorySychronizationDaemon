@@ -241,7 +241,8 @@ void SwapBig(char *path1, char *path2)
         exit(EXIT_FAILURE);
     }
 
-    __off64_t size = (__off64_t)&filestat.st_size;
+    // Could be source of a bug
+    //__off64_t size = (__off64_t)&filestat.st_size;
 
     int fd1 = open(path1, O_RDONLY);
     if (fd1 == -1)
@@ -256,30 +257,31 @@ void SwapBig(char *path1, char *path2)
         exit(EXIT_FAILURE);
     }
 
-    map1 = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd1, 0);
+    map1 = mmap(NULL, filestat.st_size, PROT_READ, MAP_PRIVATE, fd1, 0);
     if (map1 == MAP_FAILED)
     {
         syslog(LOG_ERR, "Error mapping file: %s (SwapBig)", path1);
         exit(EXIT_FAILURE);
     }
 
-    if (truncate(path2, size) == -1)
+    if (truncate(path2, filestat.st_size) == -1)
     {
         syslog(LOG_ERR, "Error truncating file: %s (SwapBig)", path2);
         exit(EXIT_FAILURE);
     }
-    map2 = mmap(NULL, size, PROT_WRITE, MAP_SHARED, fd2, 0);
+    map2 = mmap(NULL, filestat.st_size, PROT_WRITE, MAP_SHARED, fd2, 0);
     if (map1 == MAP_FAILED)
     {
         syslog(LOG_ERR, "Error mapping file: %s (SwapBig)", path2);
         exit(EXIT_FAILURE);
     }
 
-    for (int i = 0; i < size; i++)
+    //Core dump here
+    for (int i = 0; i < filestat.st_size; i++)
         map2[i] = map2[i];
 
-    munmap(map1, size);
-    munmap(map2, size);
+    munmap(map1, filestat.st_size);
+    munmap(map2, filestat.st_size);
 
     close(fd1);
     close(fd2);
