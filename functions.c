@@ -15,7 +15,7 @@ void Handler(int signum)
 bool CheckIfChanged(char *path1, char *path2)
 {
     struct stat filestat1, filestat2;
-    syslog(LOG_INFO, "CIC");
+    //syslog(LOG_INFO, "CIC");
     if (stat(path1, &filestat1) == -1)
     {
         syslog(LOG_ERR, "Error retriveing information about the file: %s (CheckIfChanged)", path1);
@@ -116,7 +116,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
                 {
                     strncpy(entry_path1 + path_len1, file1->d_name, sizeof(entry_path1) - path_len1);
                     //syslog(LOG_INFO, "Compare (delfile) - reading file2: %s", entry_path1);
-                    if (file1->d_name == file2->d_name)
+                    if (strcmp(file1->d_name, file2->d_name) == 0)
                     {
                         same = true;
                         break;
@@ -150,7 +150,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
                 while ((file2 = readdir(dir2)) != NULL)
                 {
                     strncpy(entry_path2 + path_len2, file2->d_name, sizeof(entry_path2) - path_len2);
-                    if (file1->d_name == file2->d_name)
+                    if (strcmp(file1->d_name, file2->d_name) == 0)
                     {
                         //char *newdirpath = strncpy(entry_path2 + path_len2, "/", sizeof(entry_path2) - path_len2);
                         //mkdir(path2, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -174,7 +174,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
                 while ((file2 = readdir(dir2)) != NULL)
                 {
                     strncpy(entry_path2 + path_len2, file2->d_name, sizeof(entry_path2) - path_len2);
-                    if (file1->d_name == file2->d_name)
+                    if (strcmp(file1->d_name, file2->d_name) == 0)
                     {
                         if (CheckIfChanged(entry_path1, entry_path2))
                         {
