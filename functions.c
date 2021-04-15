@@ -19,10 +19,12 @@ bool CheckIfChanged(char *path1, char *path2)
     if (stat(path1, &filestat1) == -1)
     {
         syslog(LOG_ERR, "Error retriveing information about the file: %s (CheckIfChanged)", path1);
+        exit(EXIT_FAILURE);
     }
     if (stat(path2, &filestat2) == -1)
     {
         syslog(LOG_ERR, "Error retriveing information about the file: %s (CheckIfChanged)", path2);
+        exit(EXIT_FAILURE);
     }
 
     //Negative difftime means that time1 is before time2
@@ -40,6 +42,7 @@ void UpdateFile(char *path1, char *path2, int filesize)
     if (stat(path1, &filestat) == -1)
     {
         syslog(LOG_ERR, "Error retriveing information about the file: %s (UpdateFile)", path1);
+        exit(EXIT_FAILURE);
     }
     if ((off_t)filestat.st_size <= filesize) //to tez nwm czy dziala
         SwapSmall(path1, path2);
@@ -86,6 +89,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
             if (lstat(entry_path2, &st1) == -1)
             {
                 syslog(LOG_ERR, "Error retriveing information about the file: %s (Compare)", entry_path2);
+                exit(EXIT_FAILURE);
             }
             if (S_ISDIR(st1.st_mode) && recursion)
             {
@@ -146,6 +150,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
         if (lstat(entry_path1, &st1) == -1)
         {
             syslog(LOG_ERR, "Error retriveing information about the file: %s (Compare)", entry_path1);
+            exit(EXIT_FAILURE);
         }
         //syslog(LOG_INFO, "Compare (cp1) - reading file: %s", file1->d_name);
         if (!((strcmp(file1->d_name, ".") == 0 || strcmp(file1->d_name, "..") == 0)))
@@ -171,6 +176,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
                     if(mkdir(entry_path2, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1)
                     {
                         syslog(LOG_ERR, "Error creating directory: %s (Compare)", entry_path2);
+                        exit(EXIT_FAILURE);
                     }
                     Compare(entry_path1, entry_path2, recursion, filesize);
                     //UpdateFile(entry_path1, strncpy(entry_path2 + path_len2, file1->d_name, sizeof(entry_path2) - path_len2));
@@ -253,13 +259,14 @@ void SwapBig(char *path1, char *path2)
     int fd1 = open(path1, O_RDONLY);
     if (fd1 == -1)
     {
-        syslog(LOG_ERR, "Error opening file (SwapBig)");
+        syslog(LOG_ERR, "Error opening p1 file: %s (SwapBig)", path1);
         exit(EXIT_FAILURE);
     }
+
     int fd2 = open(path2, O_RDWR);
     if (fd2 == -1)
     {
-        syslog(LOG_ERR, "Error opening file (SwapBig)");
+        syslog(LOG_ERR, "Error opening p2 file: %s (SwapBig)", path2);
         exit(EXIT_FAILURE);
     }
 
