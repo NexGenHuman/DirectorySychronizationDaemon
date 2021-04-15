@@ -51,7 +51,7 @@ void UpdateFile(char *path1, char *path2)
 
 void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje foldery i wywoluje usuwanie/kopiowanie
 {
-    syslog(LOG_INFO, "Compare");
+    syslog(LOG_INFO, "Compare: %s, %s", path1, path2);
     char entry_path1[PATH_MAX + 1], entry_path2[PATH_MAX + 1];
     size_t path_len1, path_len2;
     DIR *dir1, *dir2;
@@ -79,7 +79,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
         same = false;
         strncpy(entry_path2 + path_len2, file2->d_name, sizeof(entry_path2) - path_len2);
         syslog(LOG_INFO, "Compare (del1) - reading file: %s", file2->d_name);
-        if (!(strcmp(file2->d_name, ".") == 0 || strcmp(file2->d_name, "..") == 0))
+        if (!((strcmp(file2->d_name, ".") == 0 || strcmp(file2->d_name, "..") == 0)))
         {
             syslog(LOG_INFO, "Compare (del2) - reading file: %s", entry_path2);
             struct stat st1;
@@ -90,8 +90,13 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
                 while ((file1 = readdir(dir1)) != NULL)
                 {
                     strncpy(entry_path1 + path_len1, file1->d_name, sizeof(entry_path1) - path_len1);
-                    if (file1->d_name == file2->d_name)
+                    char entry_path_cp[PATH_MAX + 1];
+                    strncpy(entry_path_cp, entry_path2, sizeof(entry_path_cp));
+                    strncpy(entry_path_cp + path_len2, file1->d_name, sizeof(entry_path2) - path_len2);
+                    //syslog(LOG_INFO, "Compare (deldir): %s, %s, %s,", entry_path1, entry_path2, entry_path_cp);
+                    if (strcmp(entry_path_cp, entry_path2) == 0)
                     {
+                        Compare(entry_path1, entry_path2, recursion, filesize);
                         same = true;
                         break;
                     }
@@ -103,7 +108,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
                 }
                 closedir(dir1);
             }
-            else if(!S_ISDIR(st1.st_mode))
+            else if (!S_ISDIR(st1.st_mode))
             {
                 syslog(LOG_INFO, "Compare (delfile): %s", path1);
                 dir1 = opendir(path1);
@@ -137,7 +142,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
         struct stat st1;
         lstat(entry_path1, &st1);
         syslog(LOG_INFO, "Compare (cp1) - reading file: %s", file1->d_name);
-        if (!(strcmp(file1->d_name, ".") == 0 || strcmp(file1->d_name, "..") == 0))
+        if (!((strcmp(file1->d_name, ".") == 0 || strcmp(file1->d_name, "..") == 0)))
         {
             syslog(LOG_INFO, "Compare (cp2) - reading file: %s", entry_path1);
             if (S_ISDIR(st1.st_mode) && recursion)
@@ -147,16 +152,19 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
                     strncpy(entry_path2 + path_len2, file2->d_name, sizeof(entry_path2) - path_len2);
                     if (file1->d_name == file2->d_name)
                     {
-                        char *newdirpath = strncpy(entry_path2 + path_len2, file1->d_name, sizeof(entry_path2) - path_len2);
-                        mkdir(newdirpath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-                        Compare(entry_path1, newdirpath, recursion, filesize);
+                        //char *newdirpath = strncpy(entry_path2 + path_len2, "/", sizeof(entry_path2) - path_len2);
+                        //mkdir(path2, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+                        Compare(entry_path1, entry_path2, recursion, filesize);
                         same = true;
                         break;
                     }
                 }
                 if (same == false)
                 {
-                    UpdateFile(entry_path1, strncpy(entry_path2 + path_len2, file1->d_name, sizeof(entry_path2) - path_len2));
+                    strncpy(entry_path2 + path_len2, file1->d_name, sizeof(entry_path2) - path_len2);
+                    mkdir(entry_path2, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+                    Compare(entry_path1, entry_path2, recursion, filesize);
+                    //UpdateFile(entry_path1, strncpy(entry_path2 + path_len2, file1->d_name, sizeof(entry_path2) - path_len2));
                 }
                 closedir(dir2);
             }
@@ -207,7 +215,7 @@ void SwapSmall(char *path1, char *path2)
     }
     while ((bufsize1 = read(file1, buf, sizeof(buf))) > 0)
     {
-        bufsize2 = write(file2, buf, (ssize_t) bufsize1);
+        bufsize2 = write(file2, buf, (ssize_t)bufsize1);
         if (bufsize1 != bufsize2)
         {
             syslog(LOG_ERR, "Error copying file (SwapSmall)");
@@ -306,12 +314,20 @@ void Delete(char *path)
         d = opendir(path);
         while ((dir = readdir(d)) != NULL)
         {
-            if((!(strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)))
+            if (!((strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)))
             {
-                char *extendedPath = (char *)malloc(1 + strlen(path) + strlen(dir->d_name));
+                /*char *extendedPath = (char *)malloc(1 + strlen(path) + strlen(dir->d_name));
                 strcpy(extendedPath, path);
-                strcat(extendedPath, dir->d_name);
-                Delete(extendedPath);
+                strcat(extendedPath, dir->d_name);*/
+                int path_len = strlen(path);
+                if (path[path_len - 1] != '/')
+                {
+                    path[path_len] = '/';
+                    path[path_len + 1] = '\0';
+                    ++path_len;
+                }
+                strncpy(path + path_len, dir->d_name, sizeof(path) - path_len);
+                Delete(path);
             }
         }
         closedir(d);
