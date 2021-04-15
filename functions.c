@@ -4,7 +4,7 @@
 #include <utime.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-#define SMALL_FILE 1024 * 1024 * 64
+//#define SMALL_FILE 1024 * 1024 * 64
 
 void Handler(int signum)
 {
@@ -33,7 +33,7 @@ bool CheckIfChanged(char *path1, char *path2)
 }
 
 //path2 is updated to path1 state
-void UpdateFile(char *path1, char *path2)
+void UpdateFile(char *path1, char *path2, int filesize)
 {
     struct stat filestat;
 
@@ -41,7 +41,7 @@ void UpdateFile(char *path1, char *path2)
     {
         syslog(LOG_ERR, "Error retriveing information about the file: %s (UpdateFile)", path1);
     }
-    if ((off_t)filestat.st_size <= SMALL_FILE) //to tez nwm czy dziala
+    if ((off_t)filestat.st_size <= filesize) //to tez nwm czy dziala
         SwapSmall(path1, path2);
     else
     {
@@ -187,7 +187,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
                     {
                         if (CheckIfChanged(entry_path1, entry_path2))
                         {
-                            UpdateFile(entry_path1, entry_path2);
+                            UpdateFile(entry_path1, entry_path2, filesize);
                         }
                         same = true;
                         break;
@@ -196,7 +196,7 @@ void Compare(char *path1, char *path2, bool recursion, int filesize) //porownuje
                 if (same == false)
                 {
                     strncpy(entry_path2 + path_len2, file1->d_name, sizeof(entry_path2) - path_len2);
-                    UpdateFile(entry_path1, entry_path2);
+                    UpdateFile(entry_path1, entry_path2, filesize);
                 }
                 closedir(dir2);
             }
