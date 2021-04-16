@@ -1,0 +1,79 @@
+void UpdateFile(char *path1, char *path2, int filesize)
+
+This function is responsible for updating given file. It also decides based on "filesize" variable
+whether it delegates the update to SwapSmall or SwapBig function.
+
+	-- char *path1 - Path to the file based on which the other file is updated.
+			 This file is also a part in decision of whether to use SwapSmall
+			 or SwapBig function.
+
+	-- char *path2 - Path to the file that is being updated.
+
+	-- int filesize - Variable based on wchich the function decides whether file is
+			  small or big, if size of the file is lower or equal to this value
+			  SwapSmall function is executed, otherwise SwapBig is executed.
+
+--------------------------------------------------------------------------------------
+bool CheckIfChanged(char *path1, char *path2)
+
+This function compares 2 files based on their modification time. If the file from path1
+has been modified after file from path2 then the function returns "true", otherwise "false" is
+returned.
+
+	-- char *path1 - Path to the first file.
+
+	-- char *path2 - path to the second file.
+
+--------------------------------------------------------------------------------------
+void SwapSmall(char *path1, char *path2)
+
+This funcion is responsible for updating file from path2 to the state of a file from path1.
+The update is done by overwriting the file from path2.
+
+	-- char *path1 - Path to the file that is being used to update.
+
+	-- char *path2 - Path to the file that is being updated.
+
+--------------------------------------------------------------------------------------
+void SwapBig(char *path1, char *path2)
+
+This funcion is responsible for updating file from path2 to the state of a file from path1.
+The update is done by mapping both files, truncating file from path2 to the size of a file from path1
+and then copying mapped values from file in path1 to the mapped values in the file from path2.
+
+	-- char *path1 - Path to the file that is being used to update.
+
+	-- char *path2 - Path to the file that is being updated.
+
+
+--------------------------------------------------------------------------------------
+void Handler(int signum)
+
+This function used to handle SIGUSR1 signal.
+
+	-- int signum - Signal indentificator.
+
+--------------------------------------------------------------------------------------
+void Compare(char *path1, char *path2, bool recursion, int filesize)
+
+This function is responsible for updating directory in path2 to the state of directory path1. If the 
+variable "recursion", is set to "true", then the function works recusivly and is executed for every 
+directory inside the initial directories. It also forwards the "filesize" variable to the update 
+executing functions.
+
+	-- char *path1 - Path of the directory based on which the update is executed.
+
+	-- char *path2 - Path of the directory that is being updated.
+
+	-- bool recursion - Variable that states whether the function should be called recursively.
+
+	-- int filesize - Variable based on wchich program decides whether the file is
+			  small or big, if size of the file is lower or equal to this value
+			  SwapSmall function is executed, otherwise SwapBig is executed.
+
+--------------------------------------------------------------------------------------
+void Delete(char *path)
+
+This function takes care of deleting files and directories.
+
+	-- char *path - Path to the file or directory that is to be deleted.
